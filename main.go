@@ -10,7 +10,7 @@ import (
 	"github.com/sethgrid/curse"
 )
 
-const concurrency = 50
+const concurrency = 10
 const displayRate = 200 * time.Millisecond
 
 type progress struct {
@@ -42,8 +42,14 @@ func main() {
 	for i := 0; i < concurrency; i++ {
 		wg.Add(1)
 		go func() {
+			client := &http.Client{
+				Transport: &http.Transport{
+					MaxIdleConnsPerHost: 256,
+				},
+			}
+			req, _ := http.NewRequest("GET", "http://echo.testing.eu.thermeon.io/", nil)
 			for {
-				resp, err := http.Get("http://echo.testing.eu.thermeon.io/")
+				resp, err := client.Do(req)
 				requestsChan <- struct{}{}
 				if err != nil {
 					//fmt.Print("x")
@@ -59,6 +65,8 @@ func main() {
 				}
 				resp.Body.Close()
 
+				// No real demand for this. Just a bit of foot off the gasishness to give some air in the pipeline
+				time.Sleep(time.Millisecond)
 			}
 		}()
 	}

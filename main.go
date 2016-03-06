@@ -10,6 +10,9 @@ import (
 	"github.com/sethgrid/curse"
 )
 
+const concurrency = 50
+const displayRate = 200 * time.Millisecond
+
 type progress struct {
 	start         time.Time
 	totalErrors   int
@@ -36,7 +39,7 @@ func main() {
 		}
 	}()
 
-	for i := 0; i < 5; i++ {
+	for i := 0; i < concurrency; i++ {
 		wg.Add(1)
 		go func() {
 			for {
@@ -64,8 +67,6 @@ func main() {
 
 	wg.Wait()
 }
-
-const displayRate = 200 * time.Millisecond
 
 func display(p *progress) {
 
